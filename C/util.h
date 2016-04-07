@@ -8,9 +8,11 @@
 #include <hex.h>
 #include <vector>
 #include <memory>
+#include <omp.h>
 using namespace std;
 
 //typedef byte[DigestSize] ttt;
+
 
 class RandomOracle
 {
@@ -62,6 +64,7 @@ public:
 		Pi.resize(N);
 		for (uint64_t i = 0; i < N; i++)
 			Pi[i] = i;
+		srand(0);	
 		for (uint64_t i = N-1; i > 0; i--)
 		{
 			uint64_t j = rand() % (i+1);
