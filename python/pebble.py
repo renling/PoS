@@ -62,4 +62,5 @@ def PebbleButterflyStack(logn, k, nonce=0):
 	print(end-start)					
 			
 #cProfile.run('PebbleButterflyStack(16, 10)')			
-cProfile.run('PebbleExpanderStack(16, 4, 10)')	
+#cProfile.run('PebbleExpanderStack(16, 4, 10)')	
+PebbleExpanderStack(16, 4, 10)
