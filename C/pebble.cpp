@@ -28,7 +28,7 @@ void PebbleExpanderStack(int logn, int d, int k)
 		
 	SimplePerm Pi(n*d); // Precomputing the predecessors is unnecessary for C
 	
-	double tstart = omp_get_wtime();
+	
 	// pebble the input layer
 	cout << "pebbling layer 0" << endl;
 	for (uint64_t j = 0; j < n; j++)
@@ -38,6 +38,7 @@ void PebbleExpanderStack(int logn, int d, int k)
 	}
 	//cout << '\t' << H.HexDigest(Vt[n-1]) << endl;
 	
+	double tstart = omp_get_wtime();
 	// pebble layer by layer
 	for (int i = 0; i < k; i++)
 	{
@@ -61,8 +62,7 @@ void PebbleExpanderStack(int logn, int d, int k)
 					uint64_t parent = Pi.perm(j*d+l) % n;
 					inputp[l+1] = Vs[parent];
 				}
-				Hp.Digest(Vt[j], inputp, d+1);
-				
+				Hp.Digest(Vt[j], inputp, d+1);				
 			}
 			delete[] inputp[0];
 			delete inputp; 
@@ -94,7 +94,7 @@ void PebbleButterflyStack(int logn, int k)
 	for (int i = 0; i < logn; i++)
 		ButLayer[i] = ButLayer[ButDepth-1-i] = logn-1-i;
 						
-	double tstart = omp_get_wtime();
+	
 	// pebble the input layer
 	cout << "pebbling layer 0" << endl;
 	for (uint64_t j = 0; j < n; j++)
@@ -103,6 +103,7 @@ void PebbleButterflyStack(int logn, int k)
 		H.Digest(Vt[j], input, 1);	// the only input is j
 	}
 	
+	double tstart = omp_get_wtime();
 	// pebble layer by layer
 	for (int i = 0; i < k; i++)
 	{
@@ -141,7 +142,7 @@ void PebbleButterflyStack(int logn, int k)
 
 int main()
 {
-	PebbleExpanderStack(20, 16, 10);
+	PebbleExpanderStack(20, 100, 10);
 	PebbleButterflyStack(20, 10);
 	return 0;
 }

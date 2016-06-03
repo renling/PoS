@@ -11,17 +11,18 @@
 #include <omp.h>
 using namespace std;
 
-//typedef byte[DigestSize] ttt;
-
 
 class RandomOracle
 {
 public:
-	const static int DigestSize = 16;
+	const static int DigestSize = 32;
 	RandomOracle() { memset(nonce, 0, sizeof(byte)*DigestSize); }
 
 	void Digest(byte output[DigestSize], const byte* const input [DigestSize], int nInput)
 	{
+		//for (int i = 0; i < nInput; i++)
+		//	memcpy(output, input[i], DigestSize);
+		//return;	
 		hash.Update(nonce, DigestSize);
 		for (int i = 0; i < nInput; i++)
 			hash.Update(input[i], DigestSize);
@@ -46,7 +47,7 @@ public:
 	}
 	
 private:	
-	CryptoPP::SHA3_224 hash;
+	CryptoPP::SHA3_256 hash;
 	CryptoPP::HexEncoder encoder;
 	byte nonce[DigestSize];
 };
