@@ -11,14 +11,25 @@
 #include <omp.h>
 using namespace std;
 
+inline void int2bytes(byte* dst, uint64_t src, int nbytes)
+{
+	memset(dst, 0, sizeof(byte)*nbytes);
+	*((uint64_t*) dst) = src;
+}
 
 class RandomOracle
 {
 public:
-	const static int DigestSize = 32;
-	RandomOracle() { memset(nonce, 0, sizeof(byte)*DigestSize); }
+	RandomOracle(int digestSize = 32) 
+	{ 
+		DigestSize = digestSize;
+		nonce = new byte [DigestSize];
+		memset(nonce, 0, sizeof(byte)*DigestSize); 	// TODO: random nouce
+	}
 
-	void Digest(byte output[DigestSize], const byte* const input [DigestSize], int nInput)
+	int GetDigestSize()	{ return DigestSize; }
+
+	void Digest(byte *output, const byte* const *input, int nInput)
 	{
 		//for (int i = 0; i < nInput; i++)
 		//	memcpy(output, input[i], DigestSize);
@@ -30,7 +41,7 @@ public:
 		return;
 	}
 	
-	string HexDigest(const byte digest[DigestSize])
+	string HexDigest(const byte* digest)
 	{
 		string encoded;
 		
@@ -45,11 +56,19 @@ public:
 		}		
 		return encoded;
 	}
+
+	void PrintHexDigest(vector<byte*> &X)
+	{
+		for (uint64_t j = 0; j < X.size(); j++)
+			cout << '\t' << HexDigest(X[j]) << endl;
+		cout << endl;
+	}
 	
 private:	
 	CryptoPP::SHA3_256 hash;
 	CryptoPP::HexEncoder encoder;
-	byte nonce[DigestSize];
+	int DigestSize;
+	byte *nonce;	
 };
 
 class SimplePerm
