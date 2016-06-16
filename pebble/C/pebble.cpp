@@ -30,7 +30,6 @@ void PebbleExpanderStack(int logn, int d, int k)
 		int2bytes(input[0], j, H.GetDigestSize());
 		H.Digest(Vt[j], input, 1);	// the only input is j		
 	}
-	//cout << '\t' << H.HexDigest(Vt[n-1]) << endl;
 	
 	double tstart = omp_get_wtime();
 	// pebble layer by layer
@@ -63,7 +62,7 @@ void PebbleExpanderStack(int logn, int d, int k)
 			//cout << "Thread " << thread_id << " performed " << nloops << " iterations\n";
 		}		
 	}
-	cout << '\t' << H.HexDigest(Vt[n-1]) << endl;
+	cout << '\t' << HexDigest(Vt[n-1], H.GetDigestSize()) << endl;
 	double tend = omp_get_wtime();
 	cout << "total time: " << ((double)tend-tstart) << endl;
 }
@@ -129,7 +128,7 @@ void PebbleButterflyStack(int logn, int k)
 			}	
 		}				
 	}
-	cout << '\t' << H.HexDigest(Vt[n-1]) << endl;
+	cout << '\t' << HexDigest(Vt[n-1], H.GetDigestSize()) << endl;
 	double tend = omp_get_wtime();
 	cout << "total time: " << ((double)tend-tstart) << endl;
 }

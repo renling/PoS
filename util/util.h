@@ -22,54 +22,47 @@ class RandomOracle
 public:
 	RandomOracle(int digestSize = 32) 
 	{ 
-		DigestSize = digestSize;
-		nonce = new byte [DigestSize];
-		memset(nonce, 0, sizeof(byte)*DigestSize); 	// TODO: random nouce
+		this->digestSize = digestSize;
+		nonce = new byte [digestSize];
+		memset(nonce, 0, sizeof(byte)*digestSize); 	// TODO: random nouce
 	}
 
-	int GetDigestSize()	{ return DigestSize; }
+	int GetDigestSize()	{ return digestSize; }
 
 	void Digest(byte *output, const byte* const *input, int nInput)
 	{
 		//for (int i = 0; i < nInput; i++)
-		//	memcpy(output, input[i], DigestSize);
+		//	memcpy(output, input[i], digestSize);
 		//return;	
-		hash.Update(nonce, DigestSize);
+		hash.Update(nonce, digestSize);
 		for (int i = 0; i < nInput; i++)
-			hash.Update(input[i], DigestSize);
-		hash.TruncatedFinal(output, DigestSize);
+			hash.Update(input[i], digestSize);
+		hash.TruncatedFinal(output, digestSize);
 		return;
 	}
-	
-	string HexDigest(const byte* digest)
-	{
-		string encoded;
 		
-		encoder.Initialize();
-		encoder.Put(digest, DigestSize);
-		encoder.MessageEnd();		
-		int size = encoder.MaxRetrievable();
-		if(size)
-		{
-			encoded.resize(size);		
-			encoder.Get((byte*)encoded.data(), encoded.size());
-		}		
-		return encoded;
-	}
-
-	void PrintHexDigest(vector<byte*> &X)
-	{
-		for (uint64_t j = 0; j < X.size(); j++)
-			cout << '\t' << HexDigest(X[j]) << endl;
-		cout << endl;
-	}
-	
 private:	
 	CryptoPP::SHA3_256 hash;
-	CryptoPP::HexEncoder encoder;
-	int DigestSize;
+	int digestSize;
 	byte *nonce;	
 };
+
+string HexDigest(const byte* digest, int digestSize)
+{
+	string encoded;	
+	
+	CryptoPP::HexEncoder encoder;
+	encoder.Initialize();
+	encoder.Put(digest, digestSize);
+	encoder.MessageEnd();		
+	int size = encoder.MaxRetrievable();
+	if(size)
+	{
+		encoded.resize(size);		
+		encoder.Get((byte*)encoded.data(), encoded.size());
+	}		
+	return encoded;
+}
 
 class SimplePerm
 {
