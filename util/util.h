@@ -24,7 +24,7 @@ public:
 	{ 
 		this->digestSize = digestSize;
 		nonce = new byte [digestSize];
-		memset(nonce, 0, sizeof(byte)*digestSize); 	// TODO: random nouce
+		memset(nonce, 13, sizeof(byte)*digestSize); 	// TODO: random nouce
 	}
 
 	int GetDigestSize()	{ return digestSize; }
