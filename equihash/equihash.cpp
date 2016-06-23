@@ -1,14 +1,14 @@
 #include "equihash.h"
 
-void PrintHexDigest(Table &X, int digestSize, string header="")
+void PrintTable(Table &X, string header="")
 {
 	cout << header << ": len = " << X.size() << endl;
 	return;
 	for (uint64_t i = 0; i < X.size(); i++)
 	{
-		cout << "  " << HexDigest(X[i].value, digestSize) << "  (" << (int) X[i].indices[0];
-		for (int j = 1; j < X[i].indices.size(); j++)
-			cout << ", " << (int) X[i].indices[j];
+		cout << "  " << HexDigest(X[i].value, X[i].size) << "  (" << (int) X[i].indices->at(0);
+		for (int j = 1; j < X[i].indices->size(); j++)
+			cout << ", " << (int) X[i].indices->at(j);
 		cout << ")" << endl;
 	}
 	cout << endl;
@@ -16,22 +16,17 @@ void PrintHexDigest(Table &X, int digestSize, string header="")
 
 bool Duplicated(Indices &y, Indices &x1, Indices &x2)
 {
-	y.reserve(x1.size() + x2.size());
-	y.insert(y.end(), x1.begin(), x1.end());
-	y.insert(y.end(), x2.begin(), x2.end());
-	sort(y.begin(), y.end());				
-	Indices::iterator it = unique(y.begin(), y.end());
-	y.resize( distance(y.begin(), it) );
-	return y.size() < (x1.size() + x2.size());
+	merge(x1.begin(), x1.end(), x2.begin(), x2.end(), back_inserter(y));
+	return adjacent_find( y.begin(), y.end() ) != y.end();	// check for adjacent duplicate
 }
 
-void FindCollision(Table &Y, Table &X, char left, char right, int digestSize)
+void FindCollision(Table &Y, Table &X, char step)
 {
 	Y.clear();
 	Y.reserve(X.size());
-	SortBySubBytes ByteRange(left, right);
+	SortBySubBytes ByteRange(step);
 	sort(X.begin(), X.end(), ByteRange);
-	PrintHexDigest(X, digestSize, "sorted");
+	PrintTable(X, "sorted");
 
 	uint64_t i = 0, j = 0;
 	while (i < X.size())
@@ -42,56 +37,71 @@ void FindCollision(Table &Y, Table &X, char left, char right, int digestSize)
 		
 		// collision from [i, j)
 		for (uint64_t u = i; u < j; u++)
-			for (uint64_t v = u+1; v < j; v++)	// insert X[k], X[l]
+		{
+			for (uint64_t v = u+1; v < j; v++)	// add (X[k], X[l])
 			{	
 				Indices indy;
-				if (!Duplicated(indy, X[u].indices, X[v].indices))
-					Y.emplace_back(X[u], X[v], indy);				
+				if (!Duplicated(indy, *(X[u].indices), *(X[v].indices) ))
+					Y.push_back( MergeEntry(X[u], X[v], indy, step) );				
 			}
+			delete X[u].value;	// we can free Table X up to row j now
+			delete X[u].indices;
+		}
+		
 		i = j;
 	}
-	PrintHexDigest(Y, digestSize, "collide");
+	PrintTable(Y, "collide");
 }
 
-void Wagner(int nBytes, int kStep, int N)
+int WrongWagner(char nBytes, char kStep, int N, int64_t seed=0)
 {
-	RandomOracle H(nBytes);	
+	RandomOracle H(nBytes, seed);	
 
 	byte** input = new byte* [1];
 	input[0] = new byte [nBytes];
 
 	Table X, Y;
-
+	cout << sizeof(TableEntry) << endl;
 	X.resize(N);
-	for (uint64_t j = 0; j < X.size(); j++)
+	for (int j = 0; j < X.size(); j++)
 	{
 		X[j].size = nBytes;
 		X[j].value = new byte [nBytes];
 		int2bytes(input[0], j, nBytes);
 		H.Digest(X[j].value, input, 1);
-		X[j].indices.push_back(j);
+		X[j].indices = new Indices;
+		X[j].indices->push_back(j);
 	}
-	PrintHexDigest(X, nBytes, "initial");
+	PrintTable(Y, "initial");
 	
-	for (int k = 0; k < nBytes-2*kStep; k += kStep)
+	for (char k = 0; k < nBytes-2*kStep && X.size() > 0; k += kStep)
 	{
-		FindCollision(Y, X, k, k+kStep, nBytes);
+		FindCollision(Y, X, kStep);
 		swap(X, Y);
-		for (uint64_t j = 0; j < Y.size(); j++)
-			delete[] Y[j].value;
-		//for_each(Y.begin(), Y.end(), default_delete<TableEntry>());
 	}
-	FindCollision(Y, X, nBytes-2*kStep, nBytes, nBytes);
-	return;
+	FindCollision(Y, X, 2*kStep);
+	cout << "# of sol = " << Y.size() << endl; 
+	return Y.size();
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
-	int nBytes = 24;
-	int kStep = 2;
+	char nBytes = 7;
+	char kStep = 1;
+	if (argc == 3)
+	{
+		nBytes = atoi(argv[1]);
+		kStep = atoi(argv[2]);
+	}
 	int N = 2 << (kStep * 8);
-	Wagner(nBytes, kStep, N);
+
+	int nTest = 10, nSol = 0;
+	for (int i = 0; i < nTest; i++)
+	{
+		nSol += WrongWagner(nBytes, kStep, N, i);
+	}
+	cout << "Total # of sol = " << nSol << endl; 	
 	return 0;
 }
 

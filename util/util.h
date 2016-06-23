@@ -20,11 +20,11 @@ inline void int2bytes(byte* dst, uint64_t src, int nbytes)
 class RandomOracle
 {
 public:
-	RandomOracle(int digestSize = 32) 
+	RandomOracle(int digestSize = 32, int64_t seed = 0) 
 	{ 
 		this->digestSize = digestSize;
 		nonce = new byte [digestSize];
-		memset(nonce, 13, sizeof(byte)*digestSize); 	// TODO: random nouce
+		int2bytes(nonce, seed, digestSize);	
 	}
 
 	int GetDigestSize()	{ return digestSize; }
