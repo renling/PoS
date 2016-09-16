@@ -3,6 +3,7 @@
 #include <list>
 #include <algorithm>
 #include <memory.h>
+#include <ctime>
 #include "util.h"
 
 using namespace std;
@@ -22,9 +23,9 @@ TableEntry MergeEntry(TableEntry &x1, TableEntry &x2, Indices indy, char step)
 	if ((y.size = x1.size-step) > 0)
 	{
 		y.value = new byte [x1.size];			
-		CryptoPP::xorbuf(y.value, x1.value+step, x2.value+step, y.size);	
-		y.indices = new Indices(indy);
-	}			
+		CryptoPP::xorbuf(y.value, x1.value+step, x2.value+step, y.size);			
+	}
+	y.indices = new Indices(indy);		
 	return y;
 }
 

@@ -1,12 +1,14 @@
 #include "equihash.h"
 
-void PrintTable(Table &X, string header="")
+void PrintTable(Table &X, string header="", bool list=false)
 {
 	cout << header << ": len = " << X.size() << endl;
-	return;
+	if (!list)	return;
 	for (uint64_t i = 0; i < X.size(); i++)
 	{
-		cout << "  " << HexDigest(X[i].value, X[i].size) << "  (" << (int) X[i].indices->at(0);
+		if (X[i].size > 0)
+			cout << "  " << HexDigest(X[i].value, X[i].size);
+		cout << "  (" << (int) X[i].indices->at(0);
 		for (int j = 1; j < X[i].indices->size(); j++)
 			cout << ", " << (int) X[i].indices->at(j);
 		cout << ")" << endl;
@@ -15,8 +17,9 @@ void PrintTable(Table &X, string header="")
 }
 
 bool Duplicated(Indices &y, Indices &x1, Indices &x2)
-{
+{	
 	merge(x1.begin(), x1.end(), x2.begin(), x2.end(), back_inserter(y));
+	return false;	// if no duplication check
 	return adjacent_find( y.begin(), y.end() ) != y.end();	// check for adjacent duplicate
 }
 
@@ -61,7 +64,6 @@ int WrongWagner(char nBytes, char kStep, int N, int64_t seed=0)
 	input[0] = new byte [nBytes];
 
 	Table X, Y;
-	cout << sizeof(TableEntry) << endl;
 	X.resize(N);
 	for (int j = 0; j < X.size(); j++)
 	{
@@ -72,7 +74,7 @@ int WrongWagner(char nBytes, char kStep, int N, int64_t seed=0)
 		X[j].indices = new Indices;
 		X[j].indices->push_back(j);
 	}
-	PrintTable(Y, "initial");
+	PrintTable(X, "initial");
 	
 	for (char k = 0; k < nBytes-2*kStep && X.size() > 0; k += kStep)
 	{
@@ -80,6 +82,7 @@ int WrongWagner(char nBytes, char kStep, int N, int64_t seed=0)
 		swap(X, Y);
 	}
 	FindCollision(Y, X, 2*kStep);
+	PrintTable(Y, "final", true);
 	cout << "# of sol = " << Y.size() << endl; 
 	return Y.size();
 }
@@ -94,14 +97,18 @@ int main(int argc, char* argv[])
 		nBytes = atoi(argv[1]);
 		kStep = atoi(argv[2]);
 	}
+	if (nBytes % kStep)
+		cout << "Error: kStep does not divide nBytes!" << endl;
 	int N = 2 << (kStep * 8);
 
 	int nTest = 10, nSol = 0;
+	clock_t start = clock(), diff;
 	for (int i = 0; i < nTest; i++)
 	{
 		nSol += WrongWagner(nBytes, kStep, N, i);
-	}
-	cout << "Total # of sol = " << nSol << endl; 	
+	}	
+	diff = clock() - start;
+	cout << "Total # of sol = " << nSol << ", total time = " << diff / 1000000.0 << endl;
 	return 0;
 }
 
