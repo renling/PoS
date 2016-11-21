@@ -1,10 +1,10 @@
 TARGET = pebble
 SRC = pebble.cpp
 CRYPTOPPDIR = ../../cryptopp563/
-INC = -I. -I$(CRYPTOPPDIR) -I../../util/
+INC = -I. -I$(CRYPTOPPDIR) 
 LDFLAGS = -L$(CRYPTOPPDIR) -lcryptopp -lpthread
 
-$(TARGET): $(SRC) ../../util/util.h
+$(TARGET): $(SRC) util.h
 	g++ -O3 -fopenmp -std=c++11 -o $@ $< $(INC) $(LDFLAGS)
 
 clean:
